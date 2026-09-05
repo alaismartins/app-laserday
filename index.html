@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#FBF8F6">
+<meta name="description" content="Instale o app de controle de pacientes e sessões de depilação a laser — The Beauty Space">
+<title>Instalar App · The Beauty Space Laser</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'><circle cx='16' cy='16' r='15' fill='%23C9809A'/><text x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-size='16' fill='white' font-style='italic'>b</text></svg>">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#FBF8F6;--blush:#F5EBE9;--rose:#C5798F;--rose-dark:#A05872;--rose-light:#EFD0DA;--gold:#C4A87A;--dark:#2C1F1A;--mid:#7A625C;--light:#EDE4DF;--white:#FFFFFF;--shadow:0 2px 14px rgba(44,31,26,.08);--shadow-lg:0 8px 32px rgba(44,31,26,.14);--r:14px;--rs:10px;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:16px;}
+body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--dark);-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:36px 18px 48px;}
+h1,h2,h3{font-family:'Cormorant Garamond',serif;font-weight:400;line-height:1.2;}
+.wrap{width:100%;max-width:440px;}
+
+/* LOGO */
+.logo-block{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:22px;}
+.logo-block svg{width:88px;height:88px;margin-bottom:10px;}
+.logo-the{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.95rem;color:var(--rose);letter-spacing:1.5px;}
+.logo-name{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:1.7rem;color:var(--dark);letter-spacing:2.5px;text-transform:uppercase;}
+.logo-tag{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.05rem;color:var(--mid);margin-top:4px;}
+
+/* HERO CARD */
+.hero-card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow-lg);padding:26px 22px;text-align:center;margin-bottom:22px;}
+.hero-card p{font-size:.9rem;color:var(--mid);line-height:1.55;margin:10px 0 18px;}
+.btn-open{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px 18px;border-radius:var(--rs);border:none;background:var(--rose);color:var(--white);font-family:'Nunito',sans-serif;font-size:.98rem;font-weight:700;letter-spacing:.3px;text-decoration:none;cursor:pointer;transition:opacity .2s,transform .15s;-webkit-tap-highlight-color:transparent;}
+.btn-open:active{transform:scale(.98);}
+.btn-install{display:none;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px 18px;border-radius:var(--rs);border:1.5px solid var(--rose);background:transparent;color:var(--rose);font-family:'Nunito',sans-serif;font-size:.9rem;font-weight:700;letter-spacing:.3px;cursor:pointer;margin-top:10px;-webkit-tap-highlight-color:transparent;}
+.hint{font-size:.76rem;color:var(--mid);margin-top:12px;}
+
+/* INSTALL SECTION */
+.install-card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;}
+.install-hdr{padding:18px 20px 4px;}
+.install-hdr h2{font-size:1.25rem;color:var(--dark);}
+.install-hdr p{font-size:.82rem;color:var(--mid);margin-top:4px;}
+.platform-tabs{display:flex;gap:6px;padding:14px 20px 0;}
+.ptab{flex:1;padding:9px 8px;border-radius:var(--rs);border:1.5px solid var(--light);background:var(--cream);color:var(--mid);font-family:'Nunito',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:.3px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:.2s;}
+.ptab.active{background:var(--rose);border-color:var(--rose);color:var(--white);}
+.steps{padding:16px 20px 20px;display:none;}
+.steps.active{display:block;}
+.step{display:flex;gap:12px;margin-bottom:14px;}
+.step:last-child{margin-bottom:0;}
+.step-num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--blush);color:var(--rose-dark);font-size:.78rem;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;}
+.step-txt{font-size:.86rem;color:var(--dark);line-height:1.45;padding-top:2px;}
+.step-txt b{color:var(--rose-dark);}
+.note-box{margin:0 20px 20px;padding:12px 14px;background:var(--blush);border-radius:var(--rs);font-size:.78rem;color:var(--mid);line-height:1.5;}
+
+/* FOOTER */
+.foot{text-align:center;font-size:.76rem;color:var(--mid);margin-top:8px;line-height:1.6;}
+.foot a{color:var(--rose);text-decoration:none;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="logo-block">
+    <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="30" cy="30" r="28" fill="none" stroke="#C4A87A" stroke-width=".8"/>
+      <circle cx="30" cy="30" r="25" fill="#FBF8F6"/>
+      <path d="M20 22 Q30 14 40 22" fill="none" stroke="#C9809A" stroke-width="1" stroke-linecap="round"/>
+      <path d="M22 24 Q30 17 38 24" fill="none" stroke="#C9809A" stroke-width=".6" stroke-linecap="round" opacity=".5"/>
+      <text x="30" y="33" text-anchor="middle" font-family="Georgia,serif" font-size="9.5" fill="#C9809A" font-style="italic" letter-spacing="1">the</text>
+      <text x="30" y="42" text-anchor="middle" font-family="Georgia,serif" font-size="7.5" fill="#2C1F1A" letter-spacing="2.5">BEAUTY</text>
+      <text x="30" y="50" text-anchor="middle" font-family="Georgia,serif" font-size="5.5" fill="#7A625C" letter-spacing="3">SPACE</text>
+    </svg>
+    <span class="logo-tag">Laser · Controle de Pacientes</span>
+  </div>
+
+  <div class="hero-card">
+    <h1 style="font-size:1.4rem;margin-bottom:2px;">Instale o app no seu celular</h1>
+    <p>Funciona offline, direto da tela inicial, sem precisar de loja de aplicativos.</p>
+    <a href="app.html" class="btn-open" id="openBtn">Abrir o App</a>
+    <button class="btn-install" id="installBtn">⬇ Instalar Agora</button>
+    <div class="hint">Depois de abrir, siga as instruções abaixo para adicionar à tela inicial.</div>
+  </div>
+
+  <div class="install-card">
+    <div class="install-hdr">
+      <h2>Como instalar</h2>
+      <p>Escolha o seu sistema para ver o passo a passo</p>
+    </div>
+    <div class="platform-tabs">
+      <button class="ptab" id="tab-android" onclick="showPlat('android')">Android · Chrome</button>
+      <button class="ptab" id="tab-ios" onclick="showPlat('ios')">iPhone · Safari</button>
+    </div>
+
+    <div class="steps" id="steps-android">
+      <div class="step"><div class="step-num">1</div><div class="step-txt">Toque em <b>Abrir o App</b> acima usando o navegador <b>Chrome</b>.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-txt">Toque no menu <b>⋮</b> (três pontinhos) no canto superior direito do Chrome.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-txt">Toque em <b>Adicionar à tela inicial</b> (ou <b>Instalar aplicativo</b>).</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-txt">Confirme tocando em <b>Adicionar</b> / <b>Instalar</b>.</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-txt">Pronto! O ícone do app aparece na tela inicial, funcionando como um aplicativo normal.</div></div>
+    </div>
+
+    <div class="steps" id="steps-ios">
+      <div class="step"><div class="step-num">1</div><div class="step-txt">Abra este site pelo <b>Safari</b> (precisa ser o Safari — não funciona pelo Chrome ou outro navegador no iPhone).</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-txt">Toque em <b>Abrir o App</b> acima.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-txt">Toque no ícone de <b>Compartilhar</b> (o quadrado com uma seta para cima) na barra do Safari.</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-txt">Role para baixo e toque em <b>Adicionar à Tela de Início</b>.</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-txt">Toque em <b>Adicionar</b>, no canto superior direito.</div></div>
+    </div>
+
+    <div class="note-box">
+      💡 Todos os dados ficam salvos apenas neste dispositivo. Use a opção de <b>backup em PDF</b>, dentro de Configurações no app, para transferir ou compartilhar os dados com outro aparelho.
+    </div>
+  </div>
+
+  <div class="foot">
+    The Beauty Space · Laser<br>
+    <a href="app.html">Já instalei — abrir o app</a>
+  </div>
+
+</div>
+
+<script>
+function showPlat(p){
+  document.getElementById('tab-android').classList.toggle('active',p==='android');
+  document.getElementById('tab-ios').classList.toggle('active',p==='ios');
+  document.getElementById('steps-android').classList.toggle('active',p==='android');
+  document.getElementById('steps-ios').classList.toggle('active',p==='ios');
+  try{localStorage.setItem('tbs_install_plat',p);}catch(e){}
+}
+(function(){
+  const ua=navigator.userAgent||'';
+  const isIOS=/iPhone|iPad|iPod/.test(ua);
+  let plat=isIOS?'ios':'android';
+  try{const saved=localStorage.getItem('tbs_install_plat');if(saved)plat=saved;}catch(e){}
+  showPlat(plat);
+})();
+
+// Instalação nativa (Chrome/Android) via beforeinstallprompt
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',(e)=>{
+  e.preventDefault();
+  deferredPrompt=e;
+  document.getElementById('installBtn').style.display='flex';
+});
+document.getElementById('installBtn').addEventListener('click',async()=>{
+  if(!deferredPrompt)return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt=null;
+  document.getElementById('installBtn').style.display='none';
+});
+
+// Registra o service worker também a partir desta página
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(e=>console.warn('SW falhou:',e));
+  });
+}
+</script>
+</body>
+</html>

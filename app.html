@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#FBF8F6">
+<meta name="description" content="Gestão de pacientes e sessões de depilação a laser — The Beauty Space">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="TBS Laser">
+<title>The Beauty Space · Laser</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'><circle cx='16' cy='16' r='15' fill='%23C9809A'/><text x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-size='16' fill='white' font-style='italic'>b</text></svg>">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<style>
+:root{--cream:#FBF8F6;--blush:#F5EBE9;--rose:#C5798F;--rose-dark:#A05872;--rose-light:#EFD0DA;--gold:#C4A87A;--dark:#2C1F1A;--mid:#7A625C;--light:#EDE4DF;--white:#FFFFFF;--shadow:0 2px 14px rgba(44,31,26,.08);--shadow-lg:0 8px 32px rgba(44,31,26,.14);--r:14px;--rs:10px;--nav-h:68px;--hdr-h:66px;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:16px;height:100%;overflow:hidden;background:var(--cream);}
+body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--dark);height:100%;overflow:hidden;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;}
+h1,h2,h3,h4{font-family:'Cormorant Garamond',serif;font-weight:400;line-height:1.2;}
+/* HEADER */
+#app-header{flex-shrink:0;height:var(--hdr-h);background:var(--white);border-bottom:1px solid var(--light);display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:100;box-shadow:0 1px 8px rgba(44,31,26,.05);}
+.h-logo{display:flex;align-items:center;gap:10px;}
+.h-logo svg{width:42px;height:42px;flex-shrink:0;}
+.logo-text{display:flex;flex-direction:column;line-height:1.1;}
+.logo-the{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.72rem;color:var(--rose);letter-spacing:1.5px;}
+.logo-name{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:1.05rem;color:var(--dark);letter-spacing:2.5px;text-transform:uppercase;}
+#hdr-title{font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--mid);font-style:italic;}
+/* BOTTOM NAV */
+#bottom-nav{flex-shrink:0;height:calc(var(--nav-h)+env(safe-area-inset-bottom,0px));background:var(--white);border-top:1px solid var(--light);display:flex;z-index:100;box-shadow:0 -1px 8px rgba(44,31,26,.05);padding-bottom:env(safe-area-inset-bottom,0px);}
+.nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;color:var(--mid);font-family:'Nunito',sans-serif;font-size:.6rem;font-weight:600;letter-spacing:.5px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .2s;padding:6px 2px;}
+.nav-tab svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+.nav-tab.active{color:var(--rose);}
+/* MAIN */
+#main-content{padding:14px 14px 24px;}
+.section{display:none;}
+.section.active{display:block;}
+/* CARDS */
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:10px;}
+.card-body{padding:14px;}
+/* PATIENT LIST ITEM */
+.p-item{background:var(--white);border-radius:var(--rs);padding:13px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .15s;}
+.p-item:active{transform:scale(.98);}
+.p-name{font-family:'Cormorant Garamond',serif;font-size:1.08rem;font-weight:500;}
+.p-region{font-size:.78rem;color:var(--mid);margin-top:2px;}
+.p-meta{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;margin-left:10px;}
+.p-sess{font-size:.72rem;color:var(--rose);font-weight:700;}
+.p-price{font-size:.72rem;color:var(--gold);font-weight:600;}
+/* SEARCH */
+.search-wrap{position:relative;margin-bottom:14px;}
+.search-input{width:100%;padding:11px 14px 11px 40px;border:1.5px solid var(--light);border-radius:var(--rs);background:var(--white);font-family:'Nunito',sans-serif;font-size:.88rem;color:var(--dark);outline:none;transition:border-color .2s;}
+.search-input:focus{border-color:var(--rose-light);}
+.search-ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:17px;height:17px;stroke:var(--mid);fill:none;stroke-width:1.8;stroke-linecap:round;}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:9px 16px;border-radius:var(--rs);border:none;cursor:pointer;font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:700;transition:opacity .2s,transform .15s;-webkit-tap-highlight-color:transparent;letter-spacing:.2px;}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:var(--rose);color:var(--white);}
+.btn-secondary{background:var(--light);color:var(--dark);}
+.btn-ghost{background:transparent;color:var(--rose);padding:7px 10px;}
+.btn-danger{background:#FEEAEA;color:#C04040;}
+.btn-sm{padding:6px 11px;font-size:.78rem;}
+.btn-ico{padding:7px;border-radius:8px;background:var(--light);color:var(--mid);}
+.btn-ico svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;display:block;}
+.btn-fab{position:fixed;bottom:calc(var(--nav-h)+14px);right:14px;width:50px;height:50px;border-radius:50%;background:var(--rose);color:var(--white);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-lg);z-index:90;-webkit-tap-highlight-color:transparent;}
+.btn-fab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;}
+/* SECTION HEADER */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.sec-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;}
+.hdr-btns{display:flex;gap:7px;}
+/* PATIENT CARD */
+.pc-header{background:linear-gradient(135deg,var(--blush) 0%,var(--white) 100%);padding:18px 14px;border-radius:var(--r);margin-bottom:10px;box-shadow:var(--shadow);}
+.pc-name{font-family:'Cormorant Garamond',serif;font-size:1.75rem;color:var(--dark);}
+.pc-region{font-size:.83rem;color:var(--rose);font-weight:700;margin-top:4px;}
+.pc-price{font-size:.83rem;color:var(--gold);font-weight:600;margin-top:2px;}
+.pc-actions{display:flex;gap:7px;margin-top:12px;flex-wrap:wrap;}
+/* SESSION TABLE */
+.tbl-wrap{overflow-x:auto;border-radius:var(--rs);box-shadow:var(--shadow);}
+.sess-tbl{width:100%;border-collapse:collapse;font-size:.8rem;background:var(--white);}
+.sess-tbl th{background:var(--blush);padding:9px 8px;text-align:left;font-weight:700;color:var(--mid);white-space:nowrap;font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;}
+.sess-tbl td{padding:9px 8px;border-bottom:1px solid var(--light);vertical-align:middle;}
+.sess-tbl tr:last-child td{border-bottom:none;}
+.sess-tbl tr.nc{opacity:.45;}
+.sess-tbl tr.nc td{color:var(--mid);font-style:italic;}
+.act-cell{display:flex;gap:4px;white-space:nowrap;}
+/* FORMS */
+.fg{margin-bottom:12px;}
+.fl{display:block;font-size:.75rem;font-weight:700;color:var(--mid);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
+.fi,.fs,.fta{width:100%;padding:10px 13px;border:1.5px solid var(--light);border-radius:var(--rs);background:var(--white);font-family:'Nunito',sans-serif;font-size:.88rem;color:var(--dark);outline:none;transition:border-color .2s;appearance:none;}
+.fi:focus,.fs:focus,.fta:focus{border-color:var(--rose-light);}
+.fta{resize:vertical;min-height:72px;}
+.fi[type=checkbox]{width:auto;padding:0;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+/* MODAL */
+#modal-overlay{display:none;position:fixed;inset:0;background:rgba(44,31,26,.45);z-index:200;align-items:flex-end;justify-content:center;}
+#modal-overlay.open{display:flex;}
+.modal{background:var(--white);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:600px;max-height:92vh;overflow-y:auto;padding:18px 16px 30px;animation:slideUp .28s ease;}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:1.35rem;}
+.modal-close{background:var(--light);border:none;border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:1rem;color:var(--mid);display:flex;align-items:center;justify-content:center;}
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px;}
+.stat-card{background:var(--white);border-radius:var(--rs);padding:12px;box-shadow:var(--shadow);text-align:center;}
+.stat-val{font-family:'Cormorant Garamond',serif;font-size:1.65rem;color:var(--rose);line-height:1;}
+.stat-lbl{font-size:.68rem;color:var(--mid);margin-top:4px;text-transform:uppercase;letter-spacing:.4px;font-weight:700;}
+.chart-wrap{background:var(--white);border-radius:var(--rs);padding:14px;box-shadow:var(--shadow);margin-bottom:14px;}
+/* FILTER TABS */
+.ftabs{display:flex;background:var(--light);border-radius:var(--rs);padding:3px;margin-bottom:13px;gap:2px;}
+.ftab{flex:1;padding:7px 4px;border:none;border-radius:8px;background:transparent;cursor:pointer;font-family:'Nunito',sans-serif;font-size:.74rem;font-weight:700;color:var(--mid);transition:all .2s;}
+.ftab.active{background:var(--white);color:var(--rose);box-shadow:var(--shadow);}
+/* FILTER FORM */
+.filter-form{background:var(--white);border-radius:var(--rs);padding:12px;box-shadow:var(--shadow);margin-bottom:14px;display:none;}
+.filter-form.open{display:block;}
+/* PRICE TABLE */
+.ptbl{width:100%;border-collapse:collapse;}
+.ptbl tr{border-bottom:1px solid var(--light);}
+.ptbl tr:last-child{border-bottom:none;}
+.ptbl td{padding:11px 8px;font-size:.86rem;}
+.ptbl .rname{color:var(--dark);font-weight:500;}
+.ptbl .rprice{color:var(--rose);font-weight:700;text-align:right;}
+.ptbl .ract{text-align:right;}
+/* NOTES BOX */
+.notes-box{background:var(--blush);border-radius:var(--rs);padding:11px 13px;font-size:.83rem;color:var(--mid);margin-bottom:10px;border-left:3px solid var(--rose);}
+/* EMPTY */
+.empty{text-align:center;padding:44px 20px;color:var(--mid);}
+.empty svg{width:44px;height:44px;stroke:var(--rose-light);fill:none;stroke-width:1;margin-bottom:14px;}
+/* BACK */
+.back-btn{display:inline-flex;align-items:center;gap:7px;color:var(--rose);font-weight:700;font-size:.82rem;cursor:pointer;background:none;border:none;padding:0;margin-bottom:14px;-webkit-tap-highlight-color:transparent;}
+.back-btn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2.2;}
+/* DIVIDER */
+.dvdr{height:1px;background:var(--light);margin:14px 0;}
+/* INSTAGRAM */
+.ig-link{display:flex;align-items:center;justify-content:center;gap:7px;color:var(--mid);text-decoration:none;font-size:.8rem;padding:20px 16px 6px;margin-top:4px;transition:color .2s;}
+.ig-link:hover,.ig-link:active{color:var(--rose);}
+/* CONFIG */
+.cfg-sec{margin-bottom:22px;}
+.cfg-sec-title{font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:var(--dark);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--light);}
+.proc-item{background:var(--white);border-radius:var(--rs);padding:11px 13px;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);}
+.proc-name{font-weight:600;font-size:.88rem;}
+.proc-price{color:var(--rose);font-weight:700;font-size:.88rem;}
+/* TOAST */
+#toast{position:fixed;bottom:calc(var(--nav-h)+14px);left:50%;transform:translateX(-50%) translateY(120px);opacity:0;background:var(--dark);color:var(--white);padding:9px 20px;border-radius:30px;font-size:.82rem;font-weight:600;z-index:500;transition:transform .28s ease,opacity .28s ease;white-space:nowrap;box-shadow:var(--shadow-lg);pointer-events:none;}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+/* CATALOG LINK */
+.cat-link{display:flex;align-items:center;gap:12px;background:linear-gradient(120deg,var(--blush) 0%,#f0d9e2 100%);border:1px solid rgba(197,121,143,.25);border-radius:var(--rs);padding:13px 14px;text-decoration:none;margin-bottom:16px;box-shadow:0 2px 10px rgba(197,121,143,.12);transition:transform .15s,box-shadow .15s;-webkit-tap-highlight-color:transparent;cursor:pointer;}
+.cat-link:active{transform:scale(.97);box-shadow:0 1px 5px rgba(197,121,143,.1);}
+.cat-link-icon{width:38px;height:38px;background:var(--rose);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(197,121,143,.3);}
+.cat-link-icon svg{width:18px;height:18px;stroke:var(--white);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.cat-link-body{flex:1;min-width:0;}
+.cat-link-eyebrow{display:block;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.68rem;color:var(--rose);letter-spacing:1.2px;margin-bottom:2px;text-transform:lowercase;}
+.cat-link-title{display:block;font-family:'Cormorant Garamond',serif;font-size:.98rem;color:var(--dark);font-weight:500;letter-spacing:.3px;}
+.cat-link-arr{width:15px;height:15px;flex-shrink:0;stroke:var(--rose);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;opacity:.8;}
+
+.note-tag{display:inline-block;background:#FFF8E8;color:#8A6B30;border-radius:20px;font-size:.7rem;font-weight:700;padding:2px 9px;margin-top:4px;}
+/* TABLE ROW DETAIL */
+.detail-tbl{width:100%;border-collapse:collapse;font-size:.82rem;}
+.detail-tbl th{background:var(--blush);padding:8px;text-align:left;font-weight:700;color:var(--mid);font-size:.72rem;text-transform:uppercase;letter-spacing:.4px;}
+.detail-tbl td{padding:9px 8px;border-bottom:1px solid var(--light);}
+.detail-tbl tr:last-child td{border-bottom:none;}
+/* RESPONSIVE */
+@media(min-width:600px){#main-content{max-width:640px;margin:0 auto;}.modal{border-radius:var(--r);max-height:82vh;margin-bottom:0;}#modal-overlay{align-items:center;}}
+/* SCROLL ROOT — container que clipa o scrollbar fisicamente */
+#scroll-root{flex:1;min-height:0;overflow:hidden;position:relative;}
+/* SCROLL INNER — empurra o scrollbar 20px além do clip de scroll-root */
+#scroll-inner{position:absolute;top:0;left:0;bottom:0;right:-20px;overflow-y:auto;overflow-x:hidden;padding-right:20px;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header id="app-header">
+  <div class="h-logo">
+    <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="30" cy="30" r="28" fill="none" stroke="#C4A87A" stroke-width=".8"/>
+      <circle cx="30" cy="30" r="25" fill="#FBF8F6"/>
+      <path d="M20 22 Q30 14 40 22" fill="none" stroke="#C9809A" stroke-width="1" stroke-linecap="round"/>
+      <path d="M22 24 Q30 17 38 24" fill="none" stroke="#C9809A" stroke-width=".6" stroke-linecap="round" opacity=".5"/>
+      <text x="30" y="33" text-anchor="middle" font-family="Georgia,serif" font-size="9.5" fill="#C9809A" font-style="italic" letter-spacing="1">the</text>
+      <text x="30" y="42" text-anchor="middle" font-family="Georgia,serif" font-size="7.5" fill="#2C1F1A" letter-spacing="2.5">BEAUTY</text>
+      <text x="30" y="50" text-anchor="middle" font-family="Georgia,serif" font-size="5.5" fill="#7A625C" letter-spacing="3">SPACE</text>
+    </svg>
+    <div class="logo-text">
+      <span class="logo-the">the</span>
+      <span class="logo-name">Beauty Space</span>
+    </div>
+  </div>
+  <div id="hdr-title" style="font-style:italic;font-size:.95rem;color:var(--mid);font-family:'Cormorant Garamond',serif;">Depilação a Laser</div>
+</header>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- MAIN CONTENT -->
+<div id="scroll-root">
+<div id="scroll-inner">
+<main id="main-content">
+  <section id="sec-sumario" class="section active"></section>
+  <section id="sec-ficha" class="section"></section>
+  <section id="sec-stats" class="section"></section>
+  <section id="sec-tabela" class="section"></section>
+  <section id="sec-config" class="section"></section>
+</main>
+</div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav id="bottom-nav">
+  <button class="nav-tab active" data-sec="sumario" onclick="navigate('sumario')">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Sumário
+  </button>
+  <button class="nav-tab" data-sec="stats" onclick="navigate('stats')">
+    <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M7 17V13"/><path d="M12 17V9"/><path d="M17 17V5"/></svg>
+    Estatísticas
+  </button>
+  <button class="nav-tab" data-sec="tabela" onclick="navigate('tabela')">
+    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+    Tabela
+  </button>
+  <button class="nav-tab" data-sec="config" onclick="navigate('config')">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 0 1 21 12a10 10 0 0 1-1.93 7.07M4.93 4.93A10 10 0 0 0 3 12a10 10 0 0 0 1.93 7.07"/></svg>
+    Config
+  </button>
+</nav>
+
+<!-- MODAL -->
+<div id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modal-box"></div>
+</div>
+
+<!-- IMPORT PDF (hidden input) -->
+<input type="file" id="importPdfInput" accept="application/pdf" style="display:none" onchange="handleImportPDF(event)">
+
+<script>
+// ============================================================
+// THE BEAUTY SPACE — LASER CONTROL v1.0
+// ============================================================
+
+// ===== DEFAULT DATA =====
+const DD = {
+  version:1,
+  settings:{paramColTitle:"Frequência / Parâmetros",igHandle:"thebeauty_.space",igUrl:"https://www.instagram.com/thebeauty_.space/"},
+  ptNote:"★ Fazendo axila + virilha, GANHA o buço!",
+  nextPid:40, nextSid:600, nextPrId:20,
+  priceTable:[
+    {id:1,r:"Virilha Simples",p:100},{id:2,r:"Virilha Completa",p:120},{id:3,r:"Perianal",p:100},
+    {id:4,r:"Axila",p:100},{id:5,r:"Meia Perna",p:100},{id:6,r:"Perna Completa",p:140},
+    {id:7,r:"Barba",p:90},{id:8,r:"Buço",p:50},{id:9,r:"Costas",p:130},{id:10,r:"Rosto",p:120},
+    {id:11,r:"Queixo + Nariz",p:40},{id:12,r:"Orelha + Axila",p:110},{id:13,r:"Peito + Seio + Abdômen",p:100},
+    {id:14,r:"Braço",p:100},{id:15,r:"Nuca",p:50},{id:16,r:"Glúteos",p:70},{id:17,r:"Pé + Mão",p:30},
+    {id:18,r:"Virilha Completa + Axila",p:220},{id:19,r:"Virilha Completa + Axila + Buço + Perna Completa",p:360}
+  ],
+  patients:[
+    {id:1,name:"Viviane Scussel",region:"Virilha Completa",price:120,notes:"",
+     sessions:[{id:1,date:"2025-06-14",label:"1",params:"9/6/6000",attended:true,notes:""},
+               {id:2,date:"2025-07-12",label:"2",params:"9/6/6000",attended:true,notes:""}]},
+    {id:2,name:"José Henrique",region:"Peito e Barriga",price:130,notes:"",
+     sessions:[{id:3,date:"2025-06-14",label:"1",params:"8/6/8000",attended:true,notes:""},
+               {id:4,date:"2025-07-12",label:"2",params:"8/6/8000",attended:true,notes:""}]},
+    {id:3,name:"Letícia (Lindi)",region:"Virilha",price:120,notes:"",
+     sessions:[{id:5,date:"2025-07-12",label:"1",params:"10/07/6000",attended:true,notes:""}]},
+    {id:4,name:"Bruna Carina",region:"Axilas",price:100,notes:"",
+     sessions:[{id:6,date:"2024-11-09",label:"1",params:"",attended:true,notes:""},
+               {id:7,date:"2024-12-07",label:"2",params:"",attended:true,notes:""},
+               {id:8,date:"2025-01-11",label:"3",params:"",attended:true,notes:""},
+               {id:9,date:"2025-02-08",label:"4",params:"",attended:true,notes:""},
+               {id:10,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:11,date:"2025-04-12",label:"5",params:"7/5/4000",attended:true,notes:""},
+               {id:12,date:"2025-05-17",label:"6",params:"11/08/4000 – 7/5/4000",attended:true,notes:""},
+               {id:13,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:14,date:"2025-07-12",label:"7",params:"06/4/4000",attended:true,notes:""}]},
+    {id:5,name:"Patrícia (mãe)",region:"Buço e Axilas",price:null,notes:"",
+     sessions:[{id:15,date:"2025-07-12",label:"1",params:"Buço: 18/3 – Axilas: 10/7/4000",attended:true,notes:""}]},
+    {id:6,name:"Daiana Valéria (Dedé)",region:"Buço",price:50,notes:"",
+     sessions:[{id:16,date:"2025-03-12",label:"1",params:"",attended:true,notes:""},
+               {id:17,date:"2025-04-12",label:"2",params:"",attended:true,notes:""},
+               {id:18,date:"2025-06-14",label:"3",params:"20/3",attended:true,notes:""},
+               {id:19,date:"2025-07-12",label:"4",params:"20/3",attended:true,notes:""}]},
+    {id:7,name:"Yara",region:"Virilha Completa",price:120,notes:"",
+     sessions:[{id:20,date:"2025-03-12",label:"1",params:"",attended:true,notes:""},
+               {id:21,date:"2025-04-12",label:"2",params:"",attended:true,notes:""},
+               {id:22,date:"2025-06-14",label:"3",params:"20/3",attended:true,notes:""},
+               {id:23,date:"2025-07-12",label:"4",params:"20/3",attended:true,notes:""}]},
+    {id:8,name:"Neliza",region:"Virilha Completa",price:120,notes:"",
+     sessions:[{id:24,date:"2025-07-12",label:"1",params:"12",attended:true,notes:""}]},
+    {id:9,name:"Maíra",region:"Rosto",price:120,notes:"",
+     sessions:[{id:25,date:"2025-07-12",label:"1",params:"Buço: 18/3 – Rosto: 10/7/6000",attended:true,notes:""}]},
+    {id:10,name:"Rose (Wesley)",region:"Buço / Axilas / Virilha",price:270,notes:"Fez sessões anteriores; última antes da pausa: 11/01/2025",
+     sessions:[{id:26,date:"2025-06-14",label:"1",params:"Buço: 20/3 | Axilas: 5/4/4000 | Virilha: 7/5/6000",attended:true,notes:""}]},
+    {id:11,name:"Rosângela (Élida)",region:"Buço",price:50,notes:"",
+     sessions:[{id:27,date:"2024-09-12",label:"1",params:"",attended:true,notes:""},
+               {id:28,date:"2024-10-11",label:"2",params:"",attended:true,notes:""},
+               {id:29,date:"2024-11-09",label:"3",params:"",attended:true,notes:""},
+               {id:30,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:31,date:"2025-01-11",label:"4",params:"",attended:true,notes:""},
+               {id:32,date:"2025-02-08",label:"5",params:"",attended:true,notes:""},
+               {id:33,date:"2025-03-15",label:"6",params:"",attended:true,notes:""},
+               {id:34,date:"2025-04-12",label:"7",params:"20/3",attended:true,notes:""},
+               {id:35,date:"2025-05-17",label:"8",params:"21/03",attended:true,notes:""},
+               {id:36,date:"2025-06-14",label:"9",params:"21/03",attended:true,notes:""},
+               {id:37,date:"2025-07-12",label:"10",params:"21/03/4000",attended:true,notes:""}]},
+    {id:12,name:"Tânia Aparecida",region:"Buço / Axilas / Virilha",price:270,notes:"",
+     sessions:[{id:38,date:"2024-12-07",label:"1",params:"",attended:true,notes:""},
+               {id:39,date:"2025-01-11",label:"2",params:"",attended:true,notes:""},
+               {id:40,date:"2025-02-08",label:"3",params:"",attended:true,notes:""},
+               {id:41,date:"2025-03-15",label:"4",params:"",attended:true,notes:""},
+               {id:42,date:"2025-04-12",label:"5",params:"",attended:true,notes:""},
+               {id:43,date:"2025-05-17",label:"6",params:"",attended:true,notes:""},
+               {id:44,date:"2025-06-14",label:"7",params:"",attended:true,notes:""},
+               {id:45,date:"2025-07-12",label:"8",params:"Buço: 18/3 | Virilha: 18/3/5000 | Axilas: 18/3/3000",attended:true,notes:""}]},
+    {id:13,name:"Adriana Nunes",region:"Axilas / Virilha",price:220,notes:"",
+     sessions:[{id:46,date:"2024-08-10",label:"1",params:"",attended:true,notes:""},
+               {id:47,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:48,date:"2024-10-11",label:"2",params:"",attended:true,notes:""},
+               {id:49,date:"2024-11-09",label:"3",params:"",attended:true,notes:""},
+               {id:50,date:"2024-12-07",label:"4",params:"",attended:true,notes:""},
+               {id:51,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:52,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:53,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:54,date:"2025-04-12",label:"5",params:"",attended:true,notes:""},
+               {id:55,date:"2025-05-17",label:"6",params:"Buço: 18/3 | Axilas: 9/8/4000 | Virilha: 7/5/6000",attended:true,notes:""},
+               {id:56,date:"2025-06-14",label:"7",params:"Buço: 20/3 | Axilas: 9/8/4000 | Virilha: 9/8/2000",attended:true,notes:""},
+               {id:57,date:"2025-07-12",label:"8",params:"Buço: 18/3 | Axilas: 9/8/4000 | Virilha: 7/5/6000",attended:true,notes:""}]},
+    {id:14,name:"Érica (professora)",region:"Virilha Completa",price:120,notes:"",
+     sessions:[{id:58,date:"2025-01-11",label:"1",params:"",attended:true,notes:""},
+               {id:59,date:"2025-02-08",label:"2",params:"",attended:true,notes:""}]},
+    {id:15,name:"Thaís Rodrigues",region:"Axila e Virilha",price:220,notes:"",
+     sessions:[{id:60,date:"2025-03-15",label:"1",params:"10/8/4000",attended:true,notes:""},
+               {id:61,date:"2025-04-12",label:"2",params:"10/8/6000",attended:true,notes:""},
+               {id:62,date:"2025-05-17",label:"3",params:"10/8/6000",attended:true,notes:""},
+               {id:63,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:64,date:"2025-07-12",label:"4",params:"10/8/6000",attended:true,notes:""}]},
+    {id:16,name:"Bia (Simone Camatta)",region:"Axilas Completas + Virilha Completa",price:120,notes:"Axilas: R$100,00 | Virilha: R$120,00",
+     sessions:[{id:65,date:"2024-06-08",label:"1 (virilha)",params:"",attended:true,notes:""},
+               {id:66,date:"2024-07-13",label:"2 (virilha)",params:"",attended:true,notes:""},
+               {id:67,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:68,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:69,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:70,date:"2024-11-09",label:"3 (virilha)",params:"",attended:true,notes:""},
+               {id:71,date:"2024-12-07",label:"4 (virilha)",params:"",attended:true,notes:""},
+               {id:72,date:"2025-01-11",label:"5 (virilha)",params:"",attended:true,notes:""},
+               {id:73,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:74,date:"2025-03-15",label:"6 (virilha)",params:"",attended:true,notes:""},
+               {id:75,date:"2025-04-12",label:"7 (virilha)",params:"",attended:true,notes:""},
+               {id:76,date:"2025-05-17",label:"8 (virilha)",params:"9/8/2000",attended:true,notes:""},
+               {id:77,date:"2025-06-14",label:"9 (virilha) / 1 (axila)",params:"Virilha: 9/8/2000 | Axila: 10/7/4000",attended:true,notes:""},
+               {id:78,date:"2025-07-12",label:"10 (virilha) / 2 (axila)",params:"Virilha: 11/8/4000 | Axila: 11/8/4000",attended:true,notes:""}]},
+    {id:17,name:"Valéria (Léia) Rita Batista de Souza",region:"Axilas e Virilha",price:220,notes:"",
+     sessions:[{id:79,date:"2025-03-15",label:"1",params:"",attended:true,notes:""}]},
+    {id:18,name:"Natália Romani",region:"Rosto",price:50,notes:"",
+     sessions:[{id:80,date:"2025-03-15",label:"1",params:"",attended:true,notes:""}]},
+    {id:19,name:"Bruna Borges",region:"Virilha Completa",price:120,notes:"",
+     sessions:[{id:81,date:"2024-06-08",label:"1",params:"",attended:true,notes:""},
+               {id:82,date:"2024-07-13",label:"2",params:"",attended:true,notes:""},
+               {id:83,date:"2024-09-12",label:"3",params:"",attended:true,notes:""}]},
+    {id:20,name:"Gabi Kazzo",region:"Virilha Completa",price:120,notes:"",
+     sessions:[{id:84,date:"2024-07-13",label:"1",params:"",attended:true,notes:""},
+               {id:85,date:"2024-08-10",label:"2",params:"",attended:true,notes:""},
+               {id:86,date:"2024-09-12",label:"3",params:"",attended:true,notes:""},
+               {id:87,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:88,date:"2024-11-09",label:"4",params:"",attended:true,notes:""},
+               {id:89,date:"2024-12-07",label:"5",params:"",attended:true,notes:""},
+               {id:90,date:"2025-01-11",label:"6",params:"",attended:true,notes:""},
+               {id:91,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:92,date:"2025-03-15",label:"7",params:"",attended:true,notes:""},
+               {id:93,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:94,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:95,date:"2025-06-14",label:"8",params:"8/7/6000",attended:true,notes:""},
+               {id:96,date:"",label:"",params:"",attended:false,notes:"Não compareceu"}]},
+    {id:21,name:"William Sanches",region:"Barba",price:90,notes:"",
+     sessions:[{id:97,date:"2024-06-08",label:"1",params:"",attended:true,notes:""},
+               {id:98,date:"2024-07-13",label:"2",params:"",attended:true,notes:""},
+               {id:99,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:100,date:"2024-09-12",label:"3",params:"",attended:true,notes:""},
+               {id:101,date:"2024-10-11",label:"4",params:"",attended:true,notes:""},
+               {id:102,date:"2024-11-09",label:"5",params:"",attended:true,notes:""},
+               {id:103,date:"2024-12-07",label:"6",params:"",attended:true,notes:""},
+               {id:104,date:"2025-01-11",label:"7",params:"",attended:true,notes:""},
+               {id:105,date:"2025-02-08",label:"8",params:"",attended:true,notes:""},
+               {id:106,date:"2025-03-15",label:"9",params:"",attended:true,notes:""},
+               {id:107,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:108,date:"2025-05-12",label:"10",params:"",attended:true,notes:""},
+               {id:109,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:110,date:"",label:"",params:"",attended:false,notes:"Não compareceu"}]},
+    {id:22,name:"Débora Rocha",region:"Buço e Perna",price:null,notes:"",
+     sessions:[{id:111,date:"2025-01-11",label:"1",params:"",attended:true,notes:""},
+               {id:112,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:113,date:"2025-03-15",label:"2",params:"",attended:true,notes:""},
+               {id:114,date:"2025-04-12",label:"3",params:"",attended:true,notes:""},
+               {id:115,date:"2025-05-17",label:"4",params:"Buço: 18/03/5000 | Perna: 20/03/8000",attended:true,notes:""},
+               {id:116,date:"2025-06-14",label:"5",params:"Buço: 21/03/5000 | Perna: 20/03/8000",attended:true,notes:""},
+               {id:117,date:"2025-07-12",label:"6",params:"Buço: 21/03/5000 | Perna: 20/03/8000",attended:true,notes:""}]},
+    {id:23,name:"Giovana Pimentel",region:"Rosto",price:50,notes:"",
+     sessions:[{id:118,date:"2025-05-17",label:"1",params:"10/07/6000",attended:true,notes:""},
+               {id:119,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:120,date:"2025-07-10",label:"2",params:"10/07/6000",attended:true,notes:""}]},
+    {id:24,name:"Marcinho",region:"Barba",price:90,notes:"",
+     sessions:[{id:121,date:"2025-01-11",label:"1",params:"",attended:true,notes:""},
+               {id:122,date:"2025-02-08",label:"2",params:"",attended:true,notes:""},
+               {id:123,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:124,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:125,date:"2025-05-17",label:"3",params:"18/03/7000",attended:true,notes:""},
+               {id:126,date:"2025-06-14",label:"4",params:"12/09/6000 (+ hiperemia)",attended:true,notes:""},
+               {id:127,date:"",label:"",params:"",attended:false,notes:"Não compareceu"}]},
+    {id:25,name:"Inaê Kedma",region:"Rosto e Buço",price:150,notes:"",
+     sessions:[{id:128,date:"2025-05-17",label:"1",params:"Rosto: 10/07/6000 | Buço: 18/03/-",attended:true,notes:""},
+               {id:129,date:"2025-06-14",label:"2",params:"Rosto: 11/08/6000 | Buço: 18/03",attended:true,notes:""},
+               {id:130,date:"",label:"",params:"",attended:false,notes:"Não compareceu"}]},
+    {id:26,name:"Nayara",region:"Virilha Completa",price:120,notes:"",
+     sessions:[{id:131,date:"2024-12-07",label:"1",params:"",attended:true,notes:""},
+               {id:132,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:133,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:134,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:135,date:"2025-04-12",label:"2",params:"",attended:true,notes:""}]},
+    {id:27,name:"Cássio Teodoro",region:"Peito / Abd / Braço / Barba",price:null,notes:"",
+     sessions:[{id:136,date:"2025-04-12",label:"1 (peito+abd / braço)",params:"",attended:true,notes:""},
+               {id:137,date:"2025-05-17",label:"2 (peito+abd)",params:"18/03/8000 (pontual c/ deslizamentos)",attended:true,notes:""},
+               {id:138,date:"2025-05-17",label:"2 (braço)",params:"9/7/9000",attended:true,notes:""},
+               {id:139,date:"2025-07-12",label:"1 (barba)",params:"11/8/2000",attended:true,notes:""}]},
+    {id:28,name:"Camila (vizinha)",region:"Virilha Completa",price:120,notes:"",
+     sessions:[{id:140,date:"2024-11-09",label:"1",params:"",attended:true,notes:""},
+               {id:141,date:"2024-12-07",label:"2",params:"",attended:true,notes:""}]},
+    {id:29,name:"Lenne Martins",region:"Virilha Completa",price:120,notes:"",
+     sessions:[{id:142,date:"2024-06-08",label:"1",params:"",attended:true,notes:""},
+               {id:143,date:"2024-07-13",label:"2",params:"",attended:true,notes:""},
+               {id:144,date:"2024-08-10",label:"3",params:"",attended:true,notes:""},
+               {id:145,date:"2024-09-12",label:"4",params:"",attended:true,notes:""},
+               {id:146,date:"2024-10-11",label:"5",params:"",attended:true,notes:""},
+               {id:147,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:148,date:"2024-12-07",label:"6",params:"",attended:true,notes:""}]},
+    {id:30,name:"André",region:"Orelha e Nariz",price:null,notes:"",
+     sessions:[{id:149,date:"2025-07-12",label:"1",params:"18/3/4000",attended:true,notes:""}]},
+    {id:31,name:"Silvano (Simone)",region:"Costas e Peito",price:230,notes:"1ª sessão: apenas costas. 2ª sessão: costas e peito.",
+     sessions:[{id:150,date:"2025-02-08",label:"1",params:"",attended:true,notes:""},
+               {id:151,date:"2025-03-15",label:"2",params:"",attended:true,notes:""}]},
+    {id:32,name:"Ana Paula S.M",region:"",price:null,notes:"",
+     sessions:[{id:152,date:"2025-04-12",label:"1",params:"",attended:true,notes:""},
+               {id:153,date:"2025-05-17",label:"2",params:"",attended:true,notes:""}]},
+    {id:33,name:"Edenilson",region:"Nariz e Orelha",price:40,notes:"",
+     sessions:[{id:154,date:"2024-07-13",label:"1",params:"",attended:true,notes:""},
+               {id:155,date:"2024-08-10",label:"2",params:"",attended:true,notes:""},
+               {id:156,date:"2024-09-12",label:"3",params:"",attended:true,notes:""},
+               {id:157,date:"2024-10-11",label:"4",params:"",attended:true,notes:""},
+               {id:158,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:159,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:160,date:"2025-01-11",label:"5",params:"",attended:true,notes:""},
+               {id:161,date:"2025-02-08",label:"6",params:"",attended:true,notes:""},
+               {id:162,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:163,date:"2025-04-12",label:"7",params:"",attended:true,notes:""},
+               {id:164,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:165,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:166,date:"",label:"",params:"",attended:false,notes:"Não compareceu"}]},
+    {id:34,name:"Élika Ribeiro",region:"Virilha Completa e Axila",price:220,notes:"",
+     sessions:[{id:167,date:"2024-06-08",label:"1",params:"",attended:true,notes:""},
+               {id:168,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:169,date:"2024-08-10",label:"2",params:"",attended:true,notes:""},
+               {id:170,date:"2024-09-12",label:"3",params:"",attended:true,notes:""},
+               {id:171,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:172,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:173,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:174,date:"2025-01-11",label:"4",params:"",attended:true,notes:""},
+               {id:175,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:176,date:"2025-03-15",label:"5",params:"",attended:true,notes:""}]},
+    {id:35,name:"Simone Rodrigues",region:"Rosto / Virilha / Axilas",price:300,notes:"",
+     sessions:[{id:177,date:"2024-12-07",label:"1",params:"",attended:true,notes:""},
+               {id:178,date:"2025-01-11",label:"2",params:"",attended:true,notes:""},
+               {id:179,date:"2025-02-08",label:"3",params:"",attended:true,notes:""},
+               {id:180,date:"2025-03-15",label:"4",params:"",attended:true,notes:""},
+               {id:181,date:"2025-04-12",label:"5",params:"Virilha: 12/08/4000 | Axilas: 12/09 | Rosto: 18/3 | Buço: 20/3",attended:true,notes:""},
+               {id:182,date:"2025-05-17",label:"6",params:"Virilha: 12/08/4000 | Axilas: 12/08/4000 | Rosto: 18/3 | Buço: 20/3",attended:true,notes:""},
+               {id:183,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:184,date:"",label:"",params:"",attended:false,notes:"Não compareceu"}]},
+    {id:36,name:"Adriana Scussel",region:"Axilas e Pernas",price:null,notes:"",
+     sessions:[{id:185,date:"2025-03-15",label:"1 (axilas)",params:"",attended:true,notes:""},
+               {id:186,date:"2025-04-12",label:"2 (axilas) / 1 (pernas)",params:"Axilas: 18/3 | Pernas: 8/07/7000",attended:true,notes:""},
+               {id:187,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:188,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:189,date:"",label:"",params:"",attended:false,notes:"Não compareceu"}]},
+    {id:37,name:"Stella Marinho",region:"Axilas e Buço",price:null,notes:"",
+     sessions:[{id:190,date:"2025-04-12",label:"1",params:"",attended:true,notes:""}]},
+    {id:38,name:"Brenda Marinho",region:"Axilas e Buço",price:null,notes:"",
+     sessions:[{id:191,date:"2025-04-12",label:"1",params:"",attended:true,notes:""}]},
+    {id:39,name:"Dalva C. da Silva",region:"",price:null,notes:"",
+     sessions:[{id:192,date:"2025-04-12",label:"1",params:"",attended:true,notes:""},
+               {id:193,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:194,date:"",label:"",params:"",attended:false,notes:"Não compareceu"},
+               {id:195,date:"2025-06-14",label:"2",params:"",attended:true,notes:""},
+               {id:196,date:"",label:"",params:"",attended:false,notes:"Não compareceu"}]}
+  ]
+};
+
+// ===== STATE =====
+let ST={};
+let curSec='sumario',curPid=null;
+let statsChart=null;
+let sfType='ano',sfYear=new Date().getFullYear(),sfMonth=new Date().getMonth()+1,sfSem=1,sfFrom='',sfTo='';
+
+function loadST(){
+  try{const s=localStorage.getItem('tbs_laser_v1');ST=s?JSON.parse(s):JSON.parse(JSON.stringify(DD));}
+  catch(e){ST=JSON.parse(JSON.stringify(DD));}
+}
+function saveST(){localStorage.setItem('tbs_laser_v1',JSON.stringify(ST));}
+
+// ===== UTILS =====
+function fmtD(iso){if(!iso)return'—';const[y,m,d]=iso.split('-');return`${d}/${m}/${y}`;}
+function fmtC(v){if(v===null||v===undefined||v==='')return'—';return`R$ ${Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}`;}
+function attSess(p){return p.sessions.filter(s=>s.attended&&s.date);}
+function newId(k){const id=ST[k]||100;ST[k]=id+1;return id;}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function escH(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function getPt(id){return ST.patients.find(p=>p.id===id);}
+
+// ===== ICONS =====
+const I={
+  dl:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
+  ed:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+  dl2:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>`,
+  plus:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+  back:`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"/></svg>`,
+  ig:`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5" fill="currentColor"/></svg>`,
+  srch:`<svg class="search-ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`
+};
+
+// ===== NAVIGATE =====
+function navigate(sec,pid){
+  const si=document.getElementById('scroll-inner');if(si)si.scrollTop=0;
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  
+  if(sec==='ficha'&&pid){
+    curPid=pid;
+    document.getElementById('sec-ficha').classList.add('active');
+    document.querySelector('[data-sec="sumario"]').classList.add('active');
+    document.getElementById('hdr-title').textContent='Ficha da Paciente';
+    renderFicha();
+    return;
+  }
+  curSec=sec;
+  const el=document.getElementById('sec-'+sec);
+  if(el)el.classList.add('active');
+  const nav=document.querySelector(`[data-sec="${sec}"]`);
+  if(nav)nav.classList.add('active');
+  const titles={sumario:'Depilação a Laser',stats:'Estatísticas',tabela:'Tabela de Valores',config:'Configurações'};
+  document.getElementById('hdr-title').textContent=titles[sec]||'';
+  if(sec==='sumario')renderSumario();
+  else if(sec==='stats')renderStats();
+  else if(sec==='tabela')renderTabela();
+  else if(sec==='config')renderConfig();
+}
+
+// ===== RENDER SUMARIO =====
+function renderSumario(){
+  const el=document.getElementById('sec-sumario');
+  const q=(el.querySelector('.search-input')||{}).value||'';
+  const pts=ST.patients
+    .filter(p=>p.name.toLowerCase().includes(q.toLowerCase())||(p.region||'').toLowerCase().includes(q.toLowerCase()))
+    .sort((a,b)=>a.name.localeCompare(b.name,'pt'));
+  el.innerHTML=`
+    <div class="sec-hdr">
+      <h2 class="sec-title">Pacientes</h2>
+      <div class="hdr-btns">
+        <button class="btn btn-sm btn-secondary" onclick="dlSummaryPDF()">${I.dl} PDF</button>
+        <button class="btn btn-sm btn-primary" onclick="openAddPt()">${I.plus} Novo</button>
+      </div>
+    </div>
+    <div class="search-wrap">${I.srch}<input type="text" class="search-input" placeholder="Buscar paciente ou região..." value="${escH(q)}" oninput="renderSumario()"></div>
+    <a href="https://alaismartins.github.io/thebeautyspace/" target="_blank" class="cat-link">
+      <div class="cat-link-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
+      <div class="cat-link-body">
+        <span class="cat-link-eyebrow">the beauty space</span>
+        <span class="cat-link-title">catálogo: depilação a laser</span>
+      </div>
+      <svg class="cat-link-arr" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+    </a>
+    <div>
+    ${pts.length===0?`<div class="empty"><p>Nenhum paciente encontrado.</p></div>`:''}
+    ${pts.map(p=>{
+      const att=attSess(p);
+      const total=p.price?att.length*p.price:null;
+      return`<div class="p-item" onclick="navigate('ficha',${p.id})">
+        <div style="flex:1;min-width:0">
+          <div class="p-name">${escH(p.name)}</div>
+          <div class="p-region">${escH(p.region||'Região não definida')}</div>
+        </div>
+        <div class="p-meta">
+          <span class="p-sess">${att.length} ${att.length===1?'sessão':'sessões'}</span>
+          <span class="p-price">${p.price?fmtC(p.price)+'/sessão':'—'}</span>
+          ${total?`<span class="p-price" style="color:var(--gold)">Total: ${fmtC(total)}</span>`:''}
+        </div>
+      </div>`;
+    }).join('')}
+    </div>
+    <a href="${escH(ST.settings.igUrl)}" target="_blank" class="ig-link">${I.ig} @${escH(ST.settings.igHandle)}</a>
+  `;
+}
+
+// ===== RENDER FICHA =====
+function renderFicha(){
+  const el=document.getElementById('sec-ficha');
+  const p=getPt(curPid);
+  if(!p){el.innerHTML='<p>Paciente não encontrado.</p>';return;}
+  const att=attSess(p);
+  const colT=ST.settings.paramColTitle||'Frequência / Parâmetros';
+  el.innerHTML=`
+    <button class="back-btn" onclick="navigate('sumario')">${I.back} Voltar ao Sumário</button>
+    <div class="pc-header">
+      <div class="pc-name">${escH(p.name)}</div>
+      <div class="pc-region">${escH(p.region||'Região não definida')}</div>
+      <div class="pc-price">${p.price?'R$ '+p.price+',00 / sessão':'Valor não definido'}</div>
+      ${p.notes?`<div class="note-tag">${escH(p.notes)}</div>`:''}
+      <div class="pc-actions">
+        <button class="btn btn-sm btn-secondary" onclick="openEditPt(${p.id})">${I.ed} Editar</button>
+        <button class="btn btn-sm btn-secondary" onclick="dlFichaPDF(${p.id})">${I.dl} PDF</button>
+        <button class="btn btn-sm btn-danger" onclick="delPt(${p.id})">${I.dl2} Excluir</button>
+      </div>
+    </div>
+    ${p.notes?`<div class="notes-box">📝 ${escH(p.notes)}</div>`:''}
+    <div class="sec-hdr" style="margin-bottom:8px">
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.2rem">Histórico de Sessões</h3>
+      <button class="btn btn-sm btn-primary" onclick="openAddSess(${p.id})">${I.plus} Sessão</button>
+    </div>
+    ${p.sessions.length===0?`<div class="empty"><p>Nenhuma sessão registrada.</p></div>`:`
+    <div class="tbl-wrap">
+      <table class="sess-tbl">
+        <thead><tr>
+          <th>Data</th><th>Sessão</th><th>${escH(colT)}</th><th>Obs.</th><th></th>
+        </tr></thead>
+        <tbody>
+        ${p.sessions.map(s=>`
+          <tr class="${!s.attended?'nc':''}">
+            <td style="white-space:nowrap">${!s.attended?'✕':fmtD(s.date)}</td>
+            <td style="white-space:nowrap">${!s.attended?'<em>Não compareceu</em>':escH(s.label)}</td>
+            <td style="max-width:160px;word-break:break-word">${!s.attended?'':escH(s.params)}</td>
+            <td style="max-width:120px;word-break:break-word;font-size:.76rem;color:var(--mid)">${escH(s.notes)}</td>
+            <td>
+              <div class="act-cell">
+                <button class="btn-ico" onclick="openEditSess(${p.id},${s.id})" title="Editar">${I.ed}</button>
+                <button class="btn-ico" style="background:#FEEAEA;color:#C04" onclick="delSess(${p.id},${s.id})" title="Excluir">${I.dl2}</button>
+              </div>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px;padding:10px;background:var(--white);border-radius:var(--rs);box-shadow:var(--shadow);font-size:.82rem;color:var(--mid);display:flex;gap:16px;flex-wrap:wrap">
+      <span>✅ <strong>${att.length}</strong> ${att.length===1?'sessão':'sessões'} realizadas</span>
+      ${p.price?`<span>💰 Total: <strong style="color:var(--rose)">${fmtC(att.length*p.price)}</strong></span>`:''}
+    </div>`}
+    <a href="${escH(ST.settings.igUrl)}" target="_blank" class="ig-link">${I.ig} @${escH(ST.settings.igHandle)}</a>
+  `;
+}
+
+// ===== RENDER STATS =====
+function renderStats(){
+  const el=document.getElementById('sec-stats');
+  const sessions=getFilteredSessions();
+  const totalRev=sessions.reduce((s,x)=>s+(x.price||0),0);
+  const totalSess=sessions.length;
+  const avgRev=totalSess>0?totalRev/totalSess:0;
+  const monthlyData=getMonthlyData(sessions);
+  
+  el.innerHTML=`
+    <div class="sec-hdr">
+      <h2 class="sec-title">Estatísticas</h2>
+      <button class="btn btn-sm btn-secondary" onclick="dlStatsPDF()">${I.dl} PDF</button>
+    </div>
+    <div class="ftabs">
+      <button class="ftab ${sfType==='mes'?'active':''}" onclick="setSfType('mes')">Mês</button>
+      <button class="ftab ${sfType==='sem'?'active':''}" onclick="setSfType('sem')">Semestre</button>
+      <button class="ftab ${sfType==='ano'?'active':''}" onclick="setSfType('ano')">Ano</button>
+      <button class="ftab ${sfType==='per'?'active':''}" onclick="setSfType('per')">Período</button>
+    </div>
+    ${renderFilterForm()}
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-val">${totalSess}</div><div class="stat-lbl">Sessões</div></div>
+      <div class="stat-card"><div class="stat-val" style="font-size:1.3rem">${fmtC(totalRev)}</div><div class="stat-lbl">Receita Total</div></div>
+      <div class="stat-card"><div class="stat-val" style="font-size:1.3rem">${totalSess>0?fmtC(avgRev):'—'}</div><div class="stat-lbl">Receita Média/Sessão</div></div>
+      <div class="stat-card"><div class="stat-val">${ST.patients.length}</div><div class="stat-lbl">Pacientes</div></div>
+    </div>
+    <div class="chart-wrap"><canvas id="statsChart"></canvas></div>
+    <div class="tbl-wrap">
+      <table class="detail-tbl">
+        <thead><tr><th>Paciente</th><th>Sessões</th><th>Receita</th></tr></thead>
+        <tbody>${getPatientStats(sessions).map(x=>`
+          <tr>
+            <td style="font-weight:500">${escH(x.name)}</td>
+            <td>${x.count}</td>
+            <td style="color:var(--rose);font-weight:700">${fmtC(x.rev)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <a href="${escH(ST.settings.igUrl)}" target="_blank" class="ig-link">${I.ig} @${escH(ST.settings.igHandle)}</a>
+  `;
+  
+  if(statsChart){statsChart.destroy();statsChart=null;}
+  const ctx=document.getElementById('statsChart');
+  if(ctx&&monthlyData.labels.length>0){
+    statsChart=new Chart(ctx,{
+      type:'bar',
+      data:{labels:monthlyData.labels,datasets:[{label:'Receita (R$)',data:monthlyData.values,backgroundColor:'rgba(201,120,143,0.7)',borderColor:'rgba(201,120,143,1)',borderWidth:1,borderRadius:6}]},
+      options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`R$ ${ctx.raw.toFixed(2).replace('.',',')}`}}},scales:{y:{ticks:{callback:v=>`R$${v.toLocaleString('pt-BR')}`},grid:{color:'rgba(0,0,0,.04)'}},x:{grid:{display:false}}}}
+    });
+  }
+}
+
+function renderFilterForm(){
+  if(sfType==='mes') return`<div class="filter-form open" style="display:flex;gap:8px;flex-wrap:wrap">
+    <div class="fg" style="flex:1;min-width:100px"><label class="fl">Mês</label>
+      <select class="fs" onchange="sfMonth=+this.value;renderStats()">
+        ${[1,2,3,4,5,6,7,8,9,10,11,12].map(m=>`<option value="${m}" ${sfMonth===m?'selected':''}>${['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][m-1]}</option>`).join('')}
+      </select></div>
+    <div class="fg" style="flex:1;min-width:100px"><label class="fl">Ano</label>
+      <select class="fs" onchange="sfYear=+this.value;renderStats()">
+        ${[2024,2025,2026].map(y=>`<option value="${y}" ${sfYear===y?'selected':''}>${y}</option>`).join('')}
+      </select></div></div>`;
+  if(sfType==='sem') return`<div class="filter-form open" style="display:flex;gap:8px;flex-wrap:wrap">
+    <div class="fg" style="flex:1;min-width:100px"><label class="fl">Semestre</label>
+      <select class="fs" onchange="sfSem=+this.value;renderStats()">
+        <option value="1" ${sfSem===1?'selected':''}>1º Semestre</option>
+        <option value="2" ${sfSem===2?'selected':''}>2º Semestre</option>
+      </select></div>
+    <div class="fg" style="flex:1;min-width:100px"><label class="fl">Ano</label>
+      <select class="fs" onchange="sfYear=+this.value;renderStats()">
+        ${[2024,2025,2026].map(y=>`<option value="${y}" ${sfYear===y?'selected':''}>${y}</option>`).join('')}
+      </select></div></div>`;
+  if(sfType==='ano') return`<div class="filter-form open"><div class="fg"><label class="fl">Ano</label>
+    <select class="fs" onchange="sfYear=+this.value;renderStats()">
+      ${[2024,2025,2026].map(y=>`<option value="${y}" ${sfYear===y?'selected':''}>${y}</option>`).join('')}
+    </select></div></div>`;
+  if(sfType==='per') return`<div class="filter-form open" style="display:flex;gap:8px;flex-wrap:wrap">
+    <div class="fg" style="flex:1"><label class="fl">De</label><input type="date" class="fi" value="${sfFrom}" onchange="sfFrom=this.value;renderStats()"></div>
+    <div class="fg" style="flex:1"><label class="fl">Até</label><input type="date" class="fi" value="${sfTo}" onchange="sfTo=this.value;renderStats()"></div></div>`;
+  return'';
+}
+
+function setSfType(t){sfType=t;renderStats();}
+
+function getFilteredSessions(){
+  const out=[];
+  for(const p of ST.patients){
+    for(const s of p.sessions){
+      if(!s.attended||!s.date)continue;
+      let ok=false;
+      const d=s.date;
+      if(sfType==='mes'){const[y,m]=d.split('-');ok=+y===sfYear&&+m===sfMonth;}
+      else if(sfType==='sem'){const[y,m]=d.split('-');const sem=+m<=6?1:2;ok=+y===sfYear&&sem===sfSem;}
+      else if(sfType==='ano'){ok=d.startsWith(sfYear+'');}
+      else if(sfType==='per'){ok=(!sfFrom||d>=sfFrom)&&(!sfTo||d<=sfTo);}
+      if(ok)out.push({...s,price:p.price,patName:p.name,patId:p.id});
+    }
+  }
+  return out;
+}
+
+function getMonthlyData(sessions){
+  const map={};
+  for(const s of sessions){
+    const[y,m]=s.date.split('-');
+    const k=`${y}-${m}`;
+    if(!map[k])map[k]={label:`${['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][+m-1]}/${y}`,value:0};
+    map[k].value+=(s.price||0);
+  }
+  const sorted=Object.entries(map).sort((a,b)=>a[0].localeCompare(b[0]));
+  return{labels:sorted.map(e=>e[1].label),values:sorted.map(e=>e[1].value)};
+}
+
+function getPatientStats(sessions){
+  const map={};
+  for(const s of sessions){
+    if(!map[s.patId])map[s.patId]={name:s.patName,count:0,rev:0};
+    map[s.patId].count++;
+    map[s.patId].rev+=(s.price||0);
+  }
+  return Object.values(map).sort((a,b)=>b.rev-a.rev);
+}
+
+// ===== RENDER TABELA =====
+function renderTabela(){
+  const el=document.getElementById('sec-tabela');
+  el.innerHTML=`
+    <div class="sec-hdr">
+      <h2 class="sec-title">Tabela de Valores</h2>
+      <button class="btn btn-sm btn-primary" onclick="openAddPreco()">${I.plus} Item</button>
+    </div>
+    <div class="tbl-wrap" style="margin-bottom:12px">
+      <table class="ptbl">
+        <tbody>
+        ${ST.priceTable.map(i=>`
+          <tr>
+            <td class="rname">${escH(i.r)}</td>
+            <td class="rprice">${fmtC(i.p)}</td>
+            <td class="ract">
+              <div class="act-cell" style="justify-content:flex-end">
+                <button class="btn-ico" onclick="openEditPreco(${i.id})">${I.ed}</button>
+                <button class="btn-ico" style="background:#FEEAEA;color:#C04" onclick="delPreco(${i.id})">${I.dl2}</button>
+              </div>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    ${ST.ptNote?`<div class="notes-box" style="margin-bottom:12px">⭐ ${escH(ST.ptNote)}</div>`:''}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+      <button class="btn btn-sm btn-secondary" onclick="openEditNote()">✏️ Editar nota</button>
+    </div>
+    <a href="${escH(ST.settings.igUrl)}" target="_blank" class="ig-link">${I.ig} @${escH(ST.settings.igHandle)}</a>
+  `;
+}
+
+// ===== RENDER CONFIG =====
+function renderConfig(){
+  const el=document.getElementById('sec-config');
+  el.innerHTML=`
+    <h2 class="sec-title" style="margin-bottom:16px">Configurações</h2>
+    <div class="cfg-sec">
+      <div class="cfg-sec-title">📋 Título da Coluna de Parâmetros</div>
+      <div class="fg">
+        <label class="fl">Título exibido nas fichas</label>
+        <input type="text" class="fi" id="paramColInput" value="${escH(ST.settings.paramColTitle)}" placeholder="Frequência / Parâmetros">
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="saveParamCol()">Salvar</button>
+    </div>
+    <div class="dvdr"></div>
+    <div class="cfg-sec">
+      <div class="cfg-sec-title">🌿 Procedimentos Padrão</div>
+      <p style="font-size:.82rem;color:var(--mid);margin-bottom:12px">Use ao adicionar sessões para preencher valores automaticamente.</p>
+      ${ST.priceTable.map(i=>`
+        <div class="proc-item">
+          <span class="proc-name">${escH(i.r)}</span>
+          <span class="proc-price">${fmtC(i.p)}</span>
+        </div>`).join('')}
+      <button class="btn btn-sm btn-primary" style="margin-top:8px" onclick="navigate('tabela')">${I.plus} Gerenciar Tabela</button>
+    </div>
+    <div class="dvdr"></div>
+    <div class="cfg-sec">
+      <div class="cfg-sec-title">📸 Instagram</div>
+      <div class="fg"><label class="fl">Handle</label><input type="text" class="fi" id="igHandleInput" value="${escH(ST.settings.igHandle)}"></div>
+      <div class="fg"><label class="fl">URL</label><input type="text" class="fi" id="igUrlInput" value="${escH(ST.settings.igUrl)}"></div>
+      <button class="btn btn-primary btn-sm" onclick="saveIg()">Salvar</button>
+    </div>
+    <div class="dvdr"></div>
+    <div class="cfg-sec">
+      <div class="cfg-sec-title">🔄 Backup e Sincronização</div>
+      <p style="font-size:.82rem;color:var(--mid);margin-bottom:12px">
+        Os dados ficam salvos apenas neste dispositivo. Para levar os dados para outro celular/computador, ou compartilhar
+        atualizações entre dois aparelhos, gere um PDF de backup aqui e importe-o no outro dispositivo (envie por WhatsApp, e-mail, etc.).
+      </p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-sm btn-primary" onclick="dlDataPDF()">${I.dl} Exportar Backup (PDF)</button>
+        <button class="btn btn-sm btn-secondary" onclick="triggerImportPDF()">${I.dl2} Importar Backup (PDF)</button>
+      </div>
+      ${ST.settings.lastBackupAt?`<p style="font-size:.74rem;color:var(--mid);margin-top:10px">Último backup gerado em ${escH(ST.settings.lastBackupAt)}</p>`:''}
+    </div>
+    <div class="dvdr"></div>
+    <div class="cfg-sec">
+      <div class="cfg-sec-title">⚠️ Dados</div>
+      <button class="btn btn-danger btn-sm" onclick="resetData()">Restaurar dados originais</button>
+    </div>
+    <a href="${escH(ST.settings.igUrl)}" target="_blank" class="ig-link">${I.ig} @${escH(ST.settings.igHandle)}</a>
+  `;
+}
+
+// ===== MODAL =====
+function openModal(html){
+  document.getElementById('modal-box').innerHTML=html;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
+function closeModalOutside(e){if(e.target===document.getElementById('modal-overlay'))closeModal();}
+
+// ===== ADD/EDIT PATIENT =====
+function openAddPt(){
+  openModal(`
+    <div class="modal-hdr"><div class="modal-title">Novo Paciente</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="fg"><label class="fl">Nome *</label><input type="text" class="fi" id="m_name" placeholder="Nome do paciente"></div>
+    <div class="fg"><label class="fl">Região</label>
+      <select class="fs" id="m_region_sel" onchange="onRegionSel()">
+        <option value="">Selecionar procedimento...</option>
+        <option value="__custom">Personalizado</option>
+        ${ST.priceTable.map(i=>`<option value="${escH(i.r)}|${i.p}">${escH(i.r)} — ${fmtC(i.p)}</option>`).join('')}
+      </select>
+      <input type="text" class="fi" id="m_region" placeholder="Região tratada" style="margin-top:6px">
+    </div>
+    <div class="fg"><label class="fl">Valor por Sessão (R$)</label><input type="number" class="fi" id="m_price" placeholder="Ex: 120" min="0" step="0.01"></div>
+    <div class="fg"><label class="fl">Observações</label><textarea class="fta" id="m_notes" placeholder="Notas sobre a paciente..."></textarea></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="savePt(null)">Salvar</button>
+    </div>`);
+}
+
+function openEditPt(id){
+  const p=getPt(id);if(!p)return;
+  openModal(`
+    <div class="modal-hdr"><div class="modal-title">Editar Paciente</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="fg"><label class="fl">Nome *</label><input type="text" class="fi" id="m_name" value="${escH(p.name)}"></div>
+    <div class="fg"><label class="fl">Procedimento Padrão</label>
+      <select class="fs" id="m_region_sel" onchange="onRegionSel()">
+        <option value="">Selecionar para preencher...</option>
+        <option value="__custom">Personalizado</option>
+        ${ST.priceTable.map(i=>`<option value="${escH(i.r)}|${i.p}">${escH(i.r)} — ${fmtC(i.p)}</option>`).join('')}
+      </select>
+      <input type="text" class="fi" id="m_region" value="${escH(p.region||'')}" style="margin-top:6px" placeholder="Região tratada">
+    </div>
+    <div class="fg"><label class="fl">Valor por Sessão (R$)</label><input type="number" class="fi" id="m_price" value="${p.price!==null?p.price:''}" placeholder="Ex: 120" min="0" step="0.01"></div>
+    <div class="fg"><label class="fl">Observações</label><textarea class="fta" id="m_notes">${escH(p.notes||'')}</textarea></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="savePt(${id})">Salvar</button>
+    </div>`);
+}
+
+function onRegionSel(){
+  const sel=document.getElementById('m_region_sel');
+  const val=sel.value;
+  if(!val||val==='__custom')return;
+  const[r,p]=val.split('|');
+  const ri=document.getElementById('m_region');
+  const pi=document.getElementById('m_price');
+  if(ri)ri.value=r;
+  if(pi)pi.value=p;
+  sel.value='';
+}
+
+function savePt(id){
+  const name=(document.getElementById('m_name').value||'').trim();
+  if(!name){toast('Nome obrigatório!');return;}
+  const region=(document.getElementById('m_region').value||'').trim();
+  const price=document.getElementById('m_price').value;
+  const notes=(document.getElementById('m_notes').value||'').trim();
+  if(id){
+    const p=getPt(id);if(!p)return;
+    p.name=name;p.region=region;p.price=price?parseFloat(price):null;p.notes=notes;
+    saveST();closeModal();renderFicha();toast('Paciente atualizado!');
+  } else {
+    const newP={id:newId('nextPid'),name,region,price:price?parseFloat(price):null,notes,sessions:[]};
+    ST.patients.push(newP);
+    saveST();closeModal();renderSumario();toast('Paciente adicionado!');
+  }
+}
+
+function delPt(id){
+  if(!confirm('Excluir este paciente e todas as suas sessões?'))return;
+  ST.patients=ST.patients.filter(p=>p.id!==id);
+  saveST();navigate('sumario');toast('Paciente excluído.');
+}
+
+// ===== ADD/EDIT SESSION =====
+function openAddSess(pid){
+  const p=getPt(pid);if(!p)return;
+  const today=new Date().toISOString().slice(0,10);
+  const nextNum=(attSess(p).length+1);
+  openModal(`
+    <div class="modal-hdr"><div class="modal-title">Nova Sessão</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="fg"><label class="fl">Paciente</label><input type="text" class="fi" value="${escH(p.name)}" disabled></div>
+    <div class="row2">
+      <div class="fg"><label class="fl">Data</label><input type="date" class="fi" id="s_date" value="${today}"></div>
+      <div class="fg"><label class="fl">Nº / Rótulo</label><input type="text" class="fi" id="s_label" value="${nextNum}" placeholder="Ex: 1, 2 (virilha)..."></div>
+    </div>
+    <div class="fg"><label class="fl">Procedimento Padrão</label>
+      <select class="fs" id="s_proc_sel" onchange="onProcSel()">
+        <option value="">Selecionar procedimento...</option>
+        ${ST.priceTable.map(i=>`<option value="${escH(i.r)}">${escH(i.r)} — ${fmtC(i.p)}</option>`).join('')}
+      </select>
+    </div>
+    <div class="fg"><label class="fl">${escH(ST.settings.paramColTitle||'Frequência / Parâmetros')}</label>
+      <input type="text" class="fi" id="s_params" placeholder="Ex: 9/6/6000"></div>
+    <div class="fg"><label class="fl">Observações</label><textarea class="fta" id="s_notes" placeholder="Notas sobre esta sessão..."></textarea></div>
+    <div class="fg" style="display:flex;align-items:center;gap:8px">
+      <input type="checkbox" id="s_nc" onchange="toggleNc()">
+      <label for="s_nc" style="font-size:.85rem;font-weight:600;color:var(--mid)">Não compareceu</label>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveSess(${pid},null)">Salvar</button>
+    </div>`);
+}
+
+function onProcSel(){
+  const v=document.getElementById('s_proc_sel').value;
+  if(v){document.getElementById('s_params').value=v;}
+}
+
+function toggleNc(){
+  const nc=document.getElementById('s_nc').checked;
+  const dateEl=document.getElementById('s_date');
+  const labelEl=document.getElementById('s_label');
+  if(nc){dateEl.disabled=true;labelEl.disabled=true;}
+  else{dateEl.disabled=false;labelEl.disabled=false;}
+}
+
+function openEditSess(pid,sid){
+  const p=getPt(pid);if(!p)return;
+  const s=p.sessions.find(x=>x.id===sid);if(!s)return;
+  openModal(`
+    <div class="modal-hdr"><div class="modal-title">Editar Sessão</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="row2">
+      <div class="fg"><label class="fl">Data</label><input type="date" class="fi" id="s_date" value="${escH(s.date||'')}" ${!s.attended?'disabled':''}></div>
+      <div class="fg"><label class="fl">Nº / Rótulo</label><input type="text" class="fi" id="s_label" value="${escH(s.label||'')}" ${!s.attended?'disabled':''}></div>
+    </div>
+    <div class="fg"><label class="fl">${escH(ST.settings.paramColTitle||'Frequência / Parâmetros')}</label>
+      <input type="text" class="fi" id="s_params" value="${escH(s.params||'')}" ${!s.attended?'disabled':''}></div>
+    <div class="fg"><label class="fl">Observações</label><textarea class="fta" id="s_notes">${escH(s.notes||'')}</textarea></div>
+    <div class="fg" style="display:flex;align-items:center;gap:8px">
+      <input type="checkbox" id="s_nc" ${!s.attended?'checked':''} onchange="toggleNc()">
+      <label for="s_nc" style="font-size:.85rem;font-weight:600;color:var(--mid)">Não compareceu</label>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveSess(${pid},${sid})">Salvar</button>
+    </div>`);
+}
+
+function saveSess(pid,sid){
+  const p=getPt(pid);if(!p)return;
+  const nc=document.getElementById('s_nc').checked;
+  const date=nc?'':(document.getElementById('s_date').value||'');
+  const label=nc?'':(document.getElementById('s_label').value||'').trim();
+  const params=nc?'':(document.getElementById('s_params').value||'').trim();
+  const notes=(document.getElementById('s_notes').value||'').trim();
+  if(!nc&&!date){toast('Informe a data!');return;}
+  if(sid){
+    const s=p.sessions.find(x=>x.id===sid);if(!s)return;
+    s.date=date;s.label=label;s.params=params;s.notes=notes;s.attended=!nc;
+  } else {
+    p.sessions.push({id:newId('nextSid'),date,label,params,notes,attended:!nc});
+  }
+  saveST();closeModal();renderFicha();toast(sid?'Sessão atualizada!':'Sessão adicionada!');
+}
+
+function delSess(pid,sid){
+  if(!confirm('Excluir esta sessão?'))return;
+  const p=getPt(pid);if(!p)return;
+  p.sessions=p.sessions.filter(s=>s.id!==sid);
+  saveST();renderFicha();toast('Sessão excluída.');
+}
+
+// ===== PRICE TABLE CRUD =====
+function openAddPreco(){
+  openModal(`
+    <div class="modal-hdr"><div class="modal-title">Novo Item</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="fg"><label class="fl">Região / Procedimento *</label><input type="text" class="fi" id="pr_r" placeholder="Ex: Virilha Completa"></div>
+    <div class="fg"><label class="fl">Valor (R$) *</label><input type="number" class="fi" id="pr_p" placeholder="Ex: 120" min="0" step="0.01"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="savePreco(null)">Salvar</button>
+    </div>`);
+}
+
+function openEditPreco(id){
+  const i=ST.priceTable.find(x=>x.id===id);if(!i)return;
+  openModal(`
+    <div class="modal-hdr"><div class="modal-title">Editar Item</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="fg"><label class="fl">Região / Procedimento *</label><input type="text" class="fi" id="pr_r" value="${escH(i.r)}"></div>
+    <div class="fg"><label class="fl">Valor (R$) *</label><input type="number" class="fi" id="pr_p" value="${i.p}" min="0" step="0.01"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="savePreco(${id})">Salvar</button>
+    </div>`);
+}
+
+function savePreco(id){
+  const r=(document.getElementById('pr_r').value||'').trim();
+  const p=document.getElementById('pr_p').value;
+  if(!r||!p){toast('Preencha todos os campos!');return;}
+  if(id){
+    const i=ST.priceTable.find(x=>x.id===id);if(!i)return;
+    i.r=r;i.p=parseFloat(p);
+  } else {
+    ST.priceTable.push({id:newId('nextPrId'),r,p:parseFloat(p)});
+  }
+  saveST();closeModal();renderTabela();toast('Tabela atualizada!');
+}
+
+function delPreco(id){
+  if(!confirm('Excluir este item?'))return;
+  ST.priceTable=ST.priceTable.filter(i=>i.id!==id);
+  saveST();renderTabela();toast('Item excluído.');
+}
+
+function openEditNote(){
+  openModal(`
+    <div class="modal-hdr"><div class="modal-title">Editar Nota</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="fg"><label class="fl">Nota especial</label><input type="text" class="fi" id="note_inp" value="${escH(ST.ptNote||'')}"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveNote()">Salvar</button>
+    </div>`);
+}
+function saveNote(){ST.ptNote=(document.getElementById('note_inp').value||'').trim();saveST();closeModal();renderTabela();}
+
+// ===== CONFIG SAVES =====
+function saveParamCol(){
+  const v=(document.getElementById('paramColInput').value||'').trim();
+  if(!v){toast('Informe o título!');return;}
+  ST.settings.paramColTitle=v;saveST();toast('Título atualizado!');
+}
+function saveIg(){
+  ST.settings.igHandle=(document.getElementById('igHandleInput').value||'').trim();
+  ST.settings.igUrl=(document.getElementById('igUrlInput').value||'').trim();
+  saveST();toast('Instagram atualizado!');
+}
+function resetData(){
+  if(!confirm('Restaurar todos os dados originais? CUIDADO: isso apagará alterações feitas!'))return;
+  ST=JSON.parse(JSON.stringify(DD));saveST();navigate('sumario');toast('Dados restaurados!');
+}
+
+// ===== PDF: FICHA =====
+function dlFichaPDF(id){
+  const p=getPt(id);if(!p)return;
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+  const colT=ST.settings.paramColTitle||'Frequência / Parâmetros';
+  
+  doc.setFontSize(18);doc.setFont('helvetica','bold');
+  doc.text('THE BEAUTY SPACE',14,18);
+  doc.setFontSize(10);doc.setFont('helvetica','normal');
+  doc.text('Depilação a Laser — Ficha de Evolução de Tratamento',14,25);
+  doc.setDrawColor(201,120,143);doc.setLineWidth(0.5);doc.line(14,28,196,28);
+  
+  doc.setFontSize(14);doc.setFont('helvetica','bold');
+  doc.text(p.name,14,36);
+  doc.setFontSize(10);doc.setFont('helvetica','normal');
+  doc.text(`Região: ${p.region||'—'}`,14,43);
+  doc.text(`Valor por sessão: ${p.price?'R$ '+p.price+',00':'—'}`,14,49);
+  const att=attSess(p);
+  doc.text(`Sessões realizadas: ${att.length}`,14,55);
+  if(p.price) doc.text(`Total acumulado: R$ ${(att.length*p.price).toLocaleString('pt-BR',{minimumFractionDigits:2})}`,80,55);
+  if(p.notes){doc.setFont('helvetica','italic');doc.text(`Obs.: ${p.notes}`,14,61);doc.setFont('helvetica','normal');}
+  
+  const rows=p.sessions.map(s=>s.attended?[fmtD(s.date),s.label,s.params||'—',s.notes||'—']:['—','Não compareceu','—','—']);
+  doc.autoTable({
+    startY:p.notes?68:62,
+    head:[['Data','Sessão',colT,'Observações']],
+    body:rows,
+    headStyles:{fillColor:[245,235,233],textColor:[122,98,92],fontStyle:'bold',fontSize:8},
+    bodyStyles:{fontSize:8},
+    alternateRowStyles:{fillColor:[251,248,246]},
+    columnStyles:{0:{cellWidth:25},1:{cellWidth:35},2:{cellWidth:75},3:{cellWidth:45}},
+    didParseCell:(data)=>{
+      if(data.section==='body'&&rows[data.row.index][1]==='Não compareceu'){
+        data.cell.styles.textColor=[150,150,150];data.cell.styles.fontStyle='italic';
+      }
+    }
+  });
+  
+  const y=doc.lastAutoTable.finalY+6;
+  doc.setFontSize(8);doc.setTextColor(150,150,150);
+  doc.text(`Gerado em ${fmtD(new Date().toISOString().slice(0,10))} · The Beauty Space @${ST.settings.igHandle}`,14,y);
+  doc.save(`ficha_${p.name.replace(/\s+/g,'_')}.pdf`);
+  toast('PDF gerado!');
+}
+
+// ===== PDF: SUMMARY =====
+function dlSummaryPDF(){
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+  doc.setFontSize(18);doc.setFont('helvetica','bold');
+  doc.text('THE BEAUTY SPACE',14,18);
+  doc.setFontSize(10);doc.setFont('helvetica','normal');
+  doc.text('Sumário de Pacientes — Depilação a Laser',14,25);
+  doc.setDrawColor(201,120,143);doc.setLineWidth(0.5);doc.line(14,28,196,28);
+  
+  const sorted=[...ST.patients].sort((a,b)=>a.name.localeCompare(b.name,'pt'));
+  const rows=sorted.map((p,i)=>{
+    const att=attSess(p);
+    const total=p.price?att.length*p.price:null;
+    return[`${i+1}`,p.name,p.region||'—',p.price?`R$ ${p.price},00`:'—',`${att.length}`,total?`R$ ${total.toLocaleString('pt-BR',{minimumFractionDigits:2})}`:'—'];
+  });
+  
+  doc.autoTable({
+    startY:34,
+    head:[['#','Nome','Região','Valor/Sessão','Sessões','Total']],
+    body:rows,
+    headStyles:{fillColor:[245,235,233],textColor:[122,98,92],fontStyle:'bold',fontSize:8},
+    bodyStyles:{fontSize:8},
+    alternateRowStyles:{fillColor:[251,248,246]},
+  });
+  
+  const y=doc.lastAutoTable.finalY+6;
+  doc.setFontSize(8);doc.setTextColor(150,150,150);
+  doc.text(`${ST.patients.length} pacientes · Gerado em ${fmtD(new Date().toISOString().slice(0,10))} · The Beauty Space @${ST.settings.igHandle}`,14,y);
+  doc.save('sumario_pacientes.pdf');
+  toast('PDF gerado!');
+}
+
+// ===== PDF: STATS =====
+function dlStatsPDF(){
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+  doc.setFontSize(18);doc.setFont('helvetica','bold');
+  doc.text('THE BEAUTY SPACE',14,18);
+  doc.setFontSize(10);doc.setFont('helvetica','normal');
+  const filterLabel={mes:`${['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][sfMonth-1]}/${sfYear}`,sem:`${sfSem}º Semestre/${sfYear}`,ano:`${sfYear}`,per:`${sfFrom?fmtD(sfFrom):'início'} a ${sfTo?fmtD(sfTo):'hoje'}`}[sfType];
+  doc.text(`Relatório de Estatísticas — ${filterLabel}`,14,25);
+  doc.setDrawColor(201,120,143);doc.setLineWidth(0.5);doc.line(14,28,196,28);
+  
+  const sessions=getFilteredSessions();
+  const totalRev=sessions.reduce((s,x)=>s+(x.price||0),0);
+  const totalSess=sessions.length;
+  doc.setFontSize(10);
+  doc.text(`Total de sessões: ${totalSess}`,14,35);
+  doc.text(`Receita total: R$ ${totalRev.toLocaleString('pt-BR',{minimumFractionDigits:2})}`,14,41);
+  if(totalSess>0) doc.text(`Receita média/sessão: R$ ${(totalRev/totalSess).toLocaleString('pt-BR',{minimumFractionDigits:2})}`,14,47);
+  
+  const pStats=getPatientStats(sessions);
+  const rows=pStats.map(x=>[x.name,`${x.count}`,`R$ ${x.rev.toLocaleString('pt-BR',{minimumFractionDigits:2})}`]);
+  
+  doc.autoTable({
+    startY:54,
+    head:[['Paciente','Sessões','Receita']],
+    body:rows,
+    headStyles:{fillColor:[245,235,233],textColor:[122,98,92],fontStyle:'bold',fontSize:8},
+    bodyStyles:{fontSize:8},
+    alternateRowStyles:{fillColor:[251,248,246]},
+  });
+  
+  const y=doc.lastAutoTable.finalY+6;
+  doc.setFontSize(8);doc.setTextColor(150,150,150);
+  doc.text(`Gerado em ${fmtD(new Date().toISOString().slice(0,10))} · The Beauty Space @${ST.settings.igHandle}`,14,y);
+  doc.save(`estatisticas_${filterLabel.replace(/[^a-z0-9]/gi,'_')}.pdf`);
+  toast('PDF gerado!');
+}
+
+// ===== BACKUP: EXPORT/IMPORT DATA VIA PDF =====
+// Codifica/decodifica texto Unicode em Base64 (suporta acentos, ★, emojis etc.)
+function b64EncodeUnicode(str){
+  const bytes=new TextEncoder().encode(str);
+  let binary='';
+  bytes.forEach(b=>binary+=String.fromCharCode(b));
+  return btoa(binary);
+}
+function b64DecodeUnicode(b64){
+  const binary=atob(b64);
+  const bytes=new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+function dlDataPDF(){
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+  const nowStr=new Date().toLocaleString('pt-BR');
+  const nPt=ST.patients.length;
+  const nSess=ST.patients.reduce((s,p)=>s+p.sessions.length,0);
+
+  // --- Página de capa ---
+  doc.setFont('times','italic');doc.setFontSize(13);doc.setTextColor(197,121,143);
+  doc.text('the',105,38,{align:'center'});
+  doc.setFont('times','normal');doc.setFontSize(15);doc.setTextColor(44,31,26);
+  doc.text('BEAUTY SPACE',105,47,{align:'center'});
+  doc.setFontSize(20);doc.setFont('times','bold');doc.setTextColor(44,31,26);
+  doc.text('Backup de Dados',105,70,{align:'center'});
+  doc.setFont('times','italic');doc.setFontSize(12);doc.setTextColor(122,98,92);
+  doc.text('Laser · Controle de Pacientes',105,78,{align:'center'});
+
+  doc.setDrawColor(196,168,122);doc.setLineWidth(.3);doc.line(50,86,160,86);
+
+  doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(44,31,26);
+  doc.text(`Gerado em: ${nowStr}`,105,100,{align:'center'});
+  doc.text(`${nPt} pacientes  ·  ${nSess} sessões registradas`,105,107,{align:'center'});
+
+  doc.setFontSize(9.5);doc.setTextColor(122,98,92);
+  const instr=[
+    'Este arquivo é um backup completo dos dados do app, com uma cópia',
+    'codificada das informações nas páginas seguintes.',
+    '',
+    'Para importar em outro dispositivo: abra o app, vá em',
+    'Configurações → Importar Backup (PDF) e selecione este arquivo.',
+    '',
+    'Trate este arquivo com confidencialidade — ele contém dados de pacientes.'
+  ];
+  let iy=125;
+  instr.forEach(l=>{doc.text(l,105,iy,{align:'center'});iy+=6;});
+
+  // --- Páginas de dados codificados ---
+  doc.addPage();
+  doc.setFont('courier','normal');doc.setFontSize(8);doc.setTextColor(90,90,90);
+  const dataStr=JSON.stringify(ST);
+  const b64=b64EncodeUnicode(dataStr);
+  const chunkSize=90;
+  const chunks=[];
+  for(let i=0;i<b64.length;i+=chunkSize)chunks.push(b64.slice(i,i+chunkSize));
+  const lines=['===TBS-DATA-START==='].concat(chunks,['===TBS-DATA-END===']);
+
+  const marginX=15,marginTop=18,marginBottom=280,lineH=4;
+  let y=marginTop;
+  doc.setFontSize(7);doc.setTextColor(180,180,180);
+  doc.text('Backup de dados — The Beauty Space · Laser (não editar o texto abaixo)',marginX,12);
+  doc.setFontSize(8);doc.setTextColor(90,90,90);
+  lines.forEach(line=>{
+    if(y>marginBottom){
+      doc.addPage();
+      doc.setFont('courier','normal');doc.setFontSize(7);doc.setTextColor(180,180,180);
+      doc.text('Backup de dados — The Beauty Space · Laser (não editar o texto abaixo)',marginX,12);
+      doc.setFontSize(8);doc.setTextColor(90,90,90);
+      y=marginTop;
+    }
+    doc.text(line,marginX,y);
+    y+=lineH;
+  });
+
+  const today=new Date().toISOString().slice(0,10);
+  doc.save(`thebeautyspace-backup-${today}.pdf`);
+
+  ST.settings.lastBackupAt=nowStr;
+  saveST();
+  if(curSec==='config')renderConfig();
+  toast('Backup em PDF gerado!');
+}
+
+function triggerImportPDF(){
+  document.getElementById('importPdfInput').click();
+}
+
+async function handleImportPDF(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  if(!window.pdfjsLib){toast('Erro: leitor de PDF não carregado.');e.target.value='';return;}
+  try{
+    const buf=await file.arrayBuffer();
+    const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+    let fullText='';
+    for(let i=1;i<=pdf.numPages;i++){
+      const page=await pdf.getPage(i);
+      const content=await page.getTextContent();
+      fullText+=content.items.map(it=>it.str).join('\n')+'\n';
+    }
+    const m=fullText.match(/===TBS-DATA-START===([\s\S]*?)===TBS-DATA-END===/);
+    if(!m){toast('Arquivo inválido: dados de backup não encontrados neste PDF.');e.target.value='';return;}
+    const b64=m[1].replace(/[^A-Za-z0-9+/=]/g,'');
+    let parsed;
+    try{
+      const jsonStr=b64DecodeUnicode(b64);
+      parsed=JSON.parse(jsonStr);
+    }catch(err){
+      toast('Não foi possível ler os dados deste PDF. O arquivo pode estar corrompido.');
+      e.target.value='';return;
+    }
+    if(!parsed||!Array.isArray(parsed.patients)){
+      toast('Arquivo inválido: estrutura de dados incorreta.');
+      e.target.value='';return;
+    }
+    const nPt=parsed.patients.length;
+    const nSess=parsed.patients.reduce((s,p)=>s+(p.sessions?p.sessions.length:0),0);
+    window._pendingImport=parsed;
+    openModal(`
+      <div class="modal-hdr"><div class="modal-title">Importar Backup</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+      <p style="font-size:.88rem;color:var(--dark);margin-bottom:10px">Foram encontrados <strong>${nPt}</strong> pacientes e <strong>${nSess}</strong> sessões neste arquivo.</p>
+      <p style="font-size:.85rem;color:var(--rose-dark);margin-bottom:16px">⚠️ Importar vai substituir TODOS os dados atuais do app neste dispositivo. Essa ação não pode ser desfeita.</p>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-danger" onclick="confirmImportData()">Substituir Dados</button>
+      </div>`);
+  }catch(err){
+    console.error(err);
+    toast('Erro ao ler o PDF. Verifique se é um arquivo de backup válido.');
+  }
+  e.target.value='';
+}
+
+function confirmImportData(){
+  if(!window._pendingImport)return;
+  ST=window._pendingImport;
+  window._pendingImport=null;
+  saveST();
+  closeModal();
+  toast('Dados importados com sucesso!');
+  navigate(curSec||'sumario');
+}
+
+// ===== INIT =====
+loadST();
+renderSumario();
+
+// ===== PWA: SERVICE WORKER =====
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(e=>console.warn('SW falhou:',e));
+  });
+}
+
+// ===== PWA: PDF.JS WORKER =====
+if(window.pdfjsLib){
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+}
+</script>
+</body>
+</html>
